@@ -1,6 +1,6 @@
 # Training Deep Net on 14 Million Images by Using A Single Machine
 
-This note describes how to train a neural network on Full ImageNet Dataset [1] with 14,197,087 images in 21,841 classes. **We achieved a state-of-art model by using 4 GeForce GTX 980 cards on a single machine in 8.5 days.**
+This note describes how to train a neural network on the Full ImageNet Dataset [1] with 14,197,087 images in 21,841 classes. **We achieved a state-of-art model by using 4 GeForce GTX 980 cards on a single machine in 8.5 days.**
 
 There are several technical challenges in this problem.
 1. How to pack and store the massive data.
@@ -10,9 +10,9 @@ There are several technical challenges in this problem.
 We also released our pre-trained model for this full ImageNet dataset.
 
 ## Data Preprocessing
-The raw full ImageNet dataset is more than 1TB. Before training the network, we need to shuffle these images then load batch of images to feed the neural network. Before we describe how we solve it, let’s do some calculation first:
+The raw full ImageNet dataset is more than 1TB. Before training the network, we need to shuffle these images and then load batches of images to feed the neural network. Before we describe how we solve it, let’s do some calculations first:
 
-Assume we have two good storage device [2]:
+Assume we have two good storage devices [2]:
 
 ```
 | Device                    | 4K Random Seek        | Sequential Seek |
@@ -21,11 +21,11 @@ Assume we have two good storage device [2]:
 | Samsung 850 PRO (SSD)     | 40 MB/s (10,000 IOPS) | 550 MB/s        |
 ```
 
-A very naive approach is loading from a list by random seeking. If use this approach, we will spend 677 hours with HDD or 6.7 hours with SSD respectively. This is only about read. Although SSD looks not bad, but 1TB SSD is not affordable for everyone.
+A very naive approach is loading from a list by random seeking. If use this approach, we will spend 677 hours with HDD or 6.7 hours with SSD just for reading data. Although SSD performance is not too bad, a 1TB SSD is not affordable for everyone.
 
-But we notice sequential seek is much faster than random seek. Also, loading batch by batch is a sequential action. Can we make a change? The answer is we can't do sequential seek directly. We need random shuffle the training data first, then pack them into a sequential binary package.
+But we notice that sequential seek is much faster than random seek. Also, loading batch by batch is a sequential action. Can we make a change? The answer is we can't do sequential seek directly. We need to randomly shuffle the training data first, then pack them into a sequential binary package.
 
-This is the normal solution used by most deep learning packages. However, unlike ImageNet 1K dataset, where we ***cannot*** store the images in raw pixels format.  Because otherwise we will need more than 1TB space. Instead, we need to pack the images in compressed format.
+This is the normal solution used by most deep learning packages. However, unlike the ImageNet 1K dataset, we ***cannot*** store the images in raw pixels format since we would need more than 1TB of space. Instead, we need to pack the images in compressed format.
 
 ***The key ingredients are***
 - Store the images in jpeg format, and pack them into binary record.
